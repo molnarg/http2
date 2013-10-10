@@ -206,6 +206,16 @@ SSL_IMPORT SECStatus SSL_SetNextProtoCallback(PRFileDesc *fd,
  * protocol in server-preference order. If no matching protocol is found it
  * selects the first supported protocol.
  *
+ * Using this function also allows the client to transparently support ALPN.
+ * The same set of protocols will be advertised via ALPN and, if the server
+ * uses ALPN to select a protocol, SSL_GetNextProto will return
+ * SSL_NEXT_PROTO_SELECTED as the state.
+ *
+ * Since NPN uses the first protocol as the fallback protocol, when sending an
+ * ALPN extension, the first protocol is moved to the end of the list. This
+ * indicates that the fallback protocol is the least preferred. The other
+ * protocols should be in preference order.
+ *
  * The supported protocols are specified in |data| in wire-format (8-bit
  * length-prefixed). For example: "\010http/1.1\006spdy/2". */
 SSL_IMPORT SECStatus SSL_SetNextProtoNego(PRFileDesc *fd,
@@ -215,7 +225,8 @@ SSL_IMPORT SECStatus SSL_SetNextProtoNego(PRFileDesc *fd,
 typedef enum SSLNextProtoState { 
   SSL_NEXT_PROTO_NO_SUPPORT = 0, /* No peer support                */
   SSL_NEXT_PROTO_NEGOTIATED = 1, /* Mutual agreement               */
-  SSL_NEXT_PROTO_NO_OVERLAP = 2  /* No protocol overlap found      */
+  SSL_NEXT_PROTO_NO_OVERLAP = 2, /* No protocol overlap found      */
+  SSL_NEXT_PROTO_SELECTED   = 3  /* Server selected proto (ALPN)   */
 } SSLNextProtoState;
 
 /* SSL_GetNextProto can be used in the HandshakeCallback or any time after
