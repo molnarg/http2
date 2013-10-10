@@ -32,7 +32,7 @@ public:
 
   virtual void PrintDiagnostics (nsCString &log) = 0;
 
-  const static uint32_t kSendingChunkSize = 4096;
+  const static uint32_t kSendingChunkSize = 4095;
   const static uint32_t kTCPSendBufferSize = 131072;
 
   // until we have an API that can push back on receiving data (right now
@@ -51,7 +51,7 @@ public:
   SpdyInformation();
   ~SpdyInformation() {}
 
-  static const uint32_t kCount = 2;
+  static const uint32_t kCount = 3;
 
   // determine if a version of the protocol is enabled for index <= kCount
   bool ProtocolEnabled(uint32_t index);
