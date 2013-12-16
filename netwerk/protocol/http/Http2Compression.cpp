@@ -686,6 +686,14 @@ Http2Decompressor::DoIndexed()
 
   LOG3(("HTTP decompressor indexed entry %u\n", index));
 
+  if (index == 0) {
+    // Index 0 is a special case - it clear out the reference set
+    mReferenceSet.Clear();
+    mAlternateReferenceSet.Clear();
+    return NS_OK;
+  }
+  index--; // Internally, we 0-index everything, since this is, y'know, C++
+
   // Toggle this in the reference set..
   // if its not currently in the reference set then add it and
   // also emit it. If it is currently in the reference set then just
@@ -960,6 +968,8 @@ Http2Compressor::DoOutput(Http2Compressor::outputCode code,
     LOG3(("HTTP compressor %p noindex literal with name reference %u %s: %s\n",
           this, index, pair->mName.get(), pair->mValue.get()));
 
+    // In this case, the index will have already been adjusted to be 1-based
+    // instead of 0-based.
     EncodeInteger(6, index); // 01 2 bit prefix
     startByte = reinterpret_cast<unsigned char *>(mOutput->BeginWriting()) + offset;
     *startByte = (*startByte & 0x3f) | 0x40;
@@ -975,6 +985,8 @@ Http2Compressor::DoOutput(Http2Compressor::outputCode code,
     LOG3(("HTTP compressor %p literal with name reference %u %s: %s\n",
           this, index, pair->mName.get(), pair->mValue.get()));
 
+    // In this case, the index will have already been adjusted to be 1-based
+    // instead of 0-based.
     EncodeInteger(6, index); // 00 2 bit prefix
     startByte = reinterpret_cast<unsigned char *>(mOutput->BeginWriting()) + offset;
     *startByte = *startByte & 0x3f;
@@ -991,7 +1003,9 @@ Http2Compressor::DoOutput(Http2Compressor::outputCode code,
     LOG3(("HTTP compressor %p toggle %s index %u %s\n",
           this, (code == kToggleOff) ? "off" : "on",
           index, pair->mName.get()));
-    EncodeInteger(7, index);
+    // In this case, we are passed the raw 0-based C index, and need to
+    // increment to make it 1-based and comply with the spec
+    EncodeInteger(7, index + 1);
     startByte = reinterpret_cast<unsigned char *>(mOutput->BeginWriting()) + offset;
     *startByte = *startByte | 0x80; // 1 1 bit prefix
     break;
