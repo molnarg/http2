@@ -948,7 +948,25 @@ Http2Compressor::EncodeHeaderBlock(const nsCString &nvInput,
         mParsedContentLength = len;
     }
 
-    ProcessHeader(nvPair(name, value));
+    if (name.Equals("cookie")) {
+      // cookie crumbling, 8.1.3.4
+      bool haveMoreCookies = true;
+      int32_t nextCookie = valueIndex;
+      while (haveMoreCookies) {
+        int32_t semiSpaceIndex = nvInput.Find("; ", false, nextCookie,
+                                              crlfIndex - nextCookie);
+        if (semiSpaceIndex == -1) {
+          haveMoreCookies = false;
+          semiSpaceIndex = crlfIndex;
+        }
+        nsDependentCSubstring cookie = Substring(beginBuffer + nextCookie,
+                                                 beginBuffer + semiSpaceIndex);
+        ProcessHeader(nvPair(name, cookie));
+        nextCookie = semiSpaceIndex + 2;
+      }
+    } else {
+      ProcessHeader(nvPair(name, value));
+    }
   }
 
   // iterate mreference set and if !alternate.contains(old[i])
