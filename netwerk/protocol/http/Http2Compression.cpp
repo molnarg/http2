@@ -427,7 +427,22 @@ Http2Decompressor::OutputHeader(const nsACString &name, const nsACString &value)
 
   mOutput->Append(name);
   mOutput->Append(NS_LITERAL_CSTRING(": "));
-  mOutput->Append(value);
+  // Section 8.1.3.3
+  bool isSetCookie = name.Equals(NS_LITERAL_CSTRING("set-cookie"));
+  int32_t valueLen = value.Length();
+  for (int32_t i = 0; i < valueLen; ++i) {
+    if (value[i] == '\0') {
+      if (isSetCookie) {
+        mOutput->Append(NS_LITERAL_CSTRING("\r\n"));
+        mOutput->Append(name);
+        mOutput->Append(NS_LITERAL_CSTRING(": "));
+      } else {
+        mOutput->Append(',');
+      }
+    } else {
+      mOutput->Append(value[i]);
+    }
+  }
   mOutput->Append(NS_LITERAL_CSTRING("\r\n"));
   return NS_OK;
 }
