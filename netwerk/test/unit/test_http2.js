@@ -25,7 +25,7 @@ var bigListenerMD5 = '8f607cfdd2c87d6a7eedb657dafbd836';
 
 function checkIsHttp2(request) {
   try {
-    if (request.getResponseHeader("X-Firefox-Spdy") == "Http2/Draft06") {
+    if (request.getResponseHeader("X-Firefox-Spdy") == "HTTP-draft-08/2.0") {
       if (request.getResponseHeader("X-Connection-Http2") == "yes") {
         return true;
       }
@@ -136,8 +136,8 @@ Http2PushListener.prototype = new Http2CheckListener();
 Http2PushListener.prototype.onDataAvailable = function(request, ctx, stream, off, cnt) {
   this.onDataAvailableFired = true;
   this.isHttp2Connection = checkIsHttp2(request);
-  if (ctx.originalURI.spec == "https://localhost:4445/push.js" ||
-      ctx.originalURI.spec == "https://localhost:4445/push2.js") {
+  if (ctx.originalURI.spec == "https://localhost:6944/push.js" ||
+      ctx.originalURI.spec == "https://localhost:6944/push2.js") {
     do_check_eq(request.getResponseHeader("pushed"), "yes");
   }
   read_stream(stream, cnt);
@@ -194,7 +194,7 @@ function makeChan(url) {
 
 // Make sure we make a HTTP2 connection and both us and the server mark it as such
 function test_http2_basic() {
-  var chan = makeChan("https://localhost:4445/");
+  var chan = makeChan("https://localhost:6944/");
   var listener = new Http2CheckListener();
   chan.asyncOpen(listener, null);
 }
@@ -215,7 +215,7 @@ function checkXhr(xhr) {
 function test_http2_xhr() {
   var req = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
             .createInstance(Ci.nsIXMLHttpRequest);
-  req.open("GET", "https://localhost:4445/", true);
+  req.open("GET", "https://localhost:6944/", true);
   req.addEventListener("readystatechange", function (evt) { checkXhr(req); },
                        false);
   req.send(null);
@@ -223,8 +223,8 @@ function test_http2_xhr() {
 
 // Test to make sure we get multiplexing right
 function test_http2_multiplex() {
-  var chan1 = makeChan("https://localhost:4445/multiplex1");
-  var chan2 = makeChan("https://localhost:4445/multiplex2");
+  var chan1 = makeChan("https://localhost:6944/multiplex1");
+  var chan2 = makeChan("https://localhost:6944/multiplex2");
   var listener1 = new Http2MultiplexListener();
   var listener2 = new Http2MultiplexListener();
   chan1.asyncOpen(listener1, null);
@@ -233,7 +233,7 @@ function test_http2_multiplex() {
 
 // Test to make sure we gateway non-standard headers properly
 function test_http2_header() {
-  var chan = makeChan("https://localhost:4445/header");
+  var chan = makeChan("https://localhost:6944/header");
   var hvalue = "Headers are fun";
   var listener = new Http2HeaderListener(hvalue);
   chan.setRequestHeader("X-Test-Header", hvalue, false);
@@ -241,28 +241,28 @@ function test_http2_header() {
 }
 
 function test_http2_push1() {
-  var chan = makeChan("https://localhost:4445/push");
+  var chan = makeChan("https://localhost:6944/push");
   chan.loadGroup = loadGroup;
   var listener = new Http2PushListener();
   chan.asyncOpen(listener, chan);
 }
 
 function test_http2_push2() {
-  var chan = makeChan("https://localhost:4445/push.js");
+  var chan = makeChan("https://localhost:6944/push.js");
   chan.loadGroup = loadGroup;
   var listener = new Http2PushListener();
   chan.asyncOpen(listener, chan);
 }
 
 function test_http2_push3() {
-  var chan = makeChan("https://localhost:4445/push2");
+  var chan = makeChan("https://localhost:6944/push2");
   chan.loadGroup = loadGroup;
   var listener = new Http2PushListener();
   chan.asyncOpen(listener, chan);
 }
 
 function test_http2_push4() {
-  var chan = makeChan("https://localhost:4445/push2.js");
+  var chan = makeChan("https://localhost:6944/push2.js");
   chan.loadGroup = loadGroup;
   var listener = new Http2PushListener();
   chan.asyncOpen(listener, chan);
@@ -270,7 +270,7 @@ function test_http2_push4() {
 
 // Make sure we handle GETs that cover more than 2 frames properly
 function test_http2_big() {
-  var chan = makeChan("https://localhost:4445/big");
+  var chan = makeChan("https://localhost:6944/big");
   var listener = new Http2BigListener();
   chan.asyncOpen(listener, null);
 }
@@ -291,14 +291,14 @@ function do_post(content, chan, listener) {
 
 // Make sure we can do a simple POST
 function test_http2_post() {
-  var chan = makeChan("https://localhost:4445/post");
+  var chan = makeChan("https://localhost:6944/post");
   var listener = new Http2PostListener(md5s[0]);
   do_post(posts[0], chan, listener);
 }
 
 // Make sure we can do a POST that covers more than 2 frames
 function test_http2_post_big() {
-  var chan = makeChan("https://localhost:4445/post");
+  var chan = makeChan("https://localhost:6944/post");
   var listener = new Http2PostListener(md5s[1]);
   do_post(posts[1], chan, listener);
 }
@@ -405,7 +405,7 @@ function run_test() {
   var oldPref = prefs.getIntPref("network.http.speculative-parallel-limit");
   prefs.setIntPref("network.http.speculative-parallel-limit", 0);
 
-  addCertOverride("localhost", 4445,
+  addCertOverride("localhost", 6944,
                   Ci.nsICertOverrideService.ERROR_UNTRUSTED |
                   Ci.nsICertOverrideService.ERROR_MISMATCH |
                   Ci.nsICertOverrideService.ERROR_TIME);

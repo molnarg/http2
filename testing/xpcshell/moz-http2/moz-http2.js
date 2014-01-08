@@ -170,5 +170,5 @@ server.on('connection', function(socket) {
     // the first test case if done.
   });
 });
-server.listen(4445);
-console.log('HTTP2 server listening on port 4445');
+server.listen(6944);
+console.log('HTTP2 server listening on port 6944');
