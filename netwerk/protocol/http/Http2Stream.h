@@ -10,7 +10,8 @@
 #include "nsAHttpTransaction.h"
 #include "nsISupportsPriority.h"
 
-namespace mozilla { namespace net {
+namespace mozilla {
+namespace net {
 
 class Http2Session;
 class Http2Decompressor;
@@ -267,6 +268,7 @@ private:
   Http2PushedStream *mPushSource;
 };
 
-}} // namespace mozilla::net
+} // namespace mozilla::net
+} // namespace mozilla
 
 #endif // mozilla_net_Http2Stream_h

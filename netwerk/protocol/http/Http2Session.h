@@ -20,7 +20,8 @@
 
 class nsISocketTransport;
 
-namespace mozilla { namespace net {
+namespace mozilla {
+namespace net {
 
 class Http2PushedStream;
 class Http2Stream;
@@ -437,6 +438,7 @@ private:
   uint64_t        mSerial;
 };
 
-}} // namespace mozilla::net
+} // namespace mozilla::net
+} // namespace mozilla
 
 #endif // mozilla_net_Http2Session_h

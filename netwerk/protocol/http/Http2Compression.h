@@ -7,7 +7,7 @@
 #define mozilla_net_Http2Compression_Internal_h
 
 // HPACK
-// tools.ietf.org/html/draft-ietf-httpbis-header-compression-02
+// tools.ietf.org/html/draft-ietf-httpbis-header-compression-04
 
 #include "mozilla/Attributes.h"
 #include "nsDeque.h"
@@ -94,7 +94,7 @@ protected:
 class Http2Decompressor MOZ_FINAL : public Http2BaseCompressor
 {
 public:
-  Http2Decompressor();
+  Http2Decompressor() { };
   virtual ~Http2Decompressor() { } ;
 
   // NS_OK: Produces the working set of HTTP/1 formatted headers
@@ -124,10 +124,9 @@ private:
   nsresult CopyStringFromInput(uint32_t index, nsACString &val);
   nsresult CopyHuffmanStringFromInput(uint32_t index, nsACString &val);
   nsresult DecodeHuffmanCharacter(HuffmanIncomingTable *table, uint8_t &c,
-                                  uint32_t &bytesConsumed, uint8_t &bitsLeft,
-                                  bool &foundEOS);
+                                  uint32_t &bytesConsumed, uint8_t &bitsLeft);
   nsresult DecodeFinalHuffmanCharacter(HuffmanIncomingTable *table, uint8_t &c,
-                                       uint8_t &bitsLeft, bool &foundEOS);
+                                       uint8_t &bitsLeft);
 
   nsCString mHeaderStatus;
   nsCString mHeaderHost;
@@ -145,7 +144,7 @@ private:
 class Http2Compressor MOZ_FINAL : public Http2BaseCompressor
 {
 public:
-  Http2Compressor();
+  Http2Compressor() : mParsedContentLength(-1) { };
   virtual ~Http2Compressor() { }
 
   // HTTP/1 formatted header block as input - HTTP/2 formatted
